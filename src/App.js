@@ -1,38 +1,50 @@
 import React from "react";
-import PropTypes from "prop-types";
-
+import axios from "axios";
+import Movie from "./Movies";
 
 class App extends React.Component{
+  // component의 life cycle 
+  // mount(생성: constructor -> render -> componentDidMount)
+  // update(업데이트: update -> render -> componentDidUpdated)
+  // unmount(삭제: componentWillUnmount)
+
   state={
-    count: 0
-  };
-  add=()=>{
-    // this.state.count=1;
-    // console.log(this.state.count);
+    isLoading: true,
+    movies:[]
+  }
+  // render함수 호출 후 자동적으로 실행되는 함수
+  // 6초 후에 isLoading값을 바꾸도록 설정함
 
-    // =>setState쓰면 자동으로 render함수 호출됨(새로운 state를 가지고)/ 
-    // this.state.count이런식으로 쓰는건 나중에 성능문제 생김
-    //this.setState({count:this.state.count+1});
 
-    this.setState(current => ({ count: current.count + 1 }));
-  };
-  minus=()=>{
-    // this.state.count--;
-    // console.log(this.state.count);   
-    // this.render();
+  // axios가 끝날 때 까지 기다려줌 => async, await
+  getMovies = async () => { 
+    // const movies=await axios.get("https://yts-proxy.nomadcoders1.now.sh/list_movies.json");
+    // console.log(movies.data.data.movies);
+    const {data : { data :{movies}}}=await axios.get("https://yts-proxy.nomadcoders1.now.sh/list_movies.json?sort_by=rating");
+    this.setState({ movies, isLoading:false }); //{movies:movies}=={movies}
+  }
 
-    // =>setState쓰면 자동으로 render함수 호출됨
-    //this.setState({count:this.state.count-1});
 
-    this.setState(current => ({ count: current.count - 1 }));
-  };
+  // render함수 호출 후 자동적으로 실행되는 함수(componentDidMount)
+  // 6초 후에 isLoading값을 바꾸도록 설정함
+  componentDidMount(){ 
+    // setTimeout(()=>{
+    //   this.setState({isLoading:false}); //여기서 다시 render호출
+    // }, 6000);
+    this.getMovies();
+  }
   render(){
-    return (
-    <div>
-      <h1>The number is {this.state.count}</h1>
-      <button onClick={this.add}>Add</button>
-      <button onClick={this.minus}>Minus</button>
-    </div>);
+    const {isLoading , movies}=this.state;
+    return <div>{isLoading?"Loading . . .":movies.map(movie=>{
+      console.log(movie);
+      return <Movie 
+      key={movie.id}
+      id={movie.id} 
+      year={movie.year} 
+      title={movie.title} 
+      summary={movie.summary} 
+      poster={movie.medium_cover_image} />
+    })}</div>;
   }
 }
 
